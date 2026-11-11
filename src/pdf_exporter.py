@@ -1,19 +1,49 @@
+import os
 from fpdf import FPDF
 
-def create_clean_pdf(text: str, title: str = "Official Record Document") -> bytes:
-    """Generates a clean, well-formatted PDF in memory and returns raw bytes."""
+FONT_PATH = os.path.join("fonts", "Caveat-Regular.ttf")
+
+def create_clean_pdf(
+    text: str,
+    title: str = "Official Record Document",
+    ink_color: str = "blue"
+) -> bytes:
+    """Generates a PDF rendered in a realistic human handwriting font."""
     pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
 
-    # Title Header
-    pdf.set_font("Helvetica", "B", 15)
-    pdf.cell(0, 10, title, ln=True, align="L")
+    # Set realistic pen ink color (Blue Ballpoint/Gel Pen or Black Ink)
+    if ink_color.lower() == "blue":
+        pdf.set_text_color(20, 45, 115)   # Classic dark blue pen ink
+    else:
+        pdf.set_text_color(25, 25, 28)    # Classic black pen ink
+
+    # Load custom handwriting TTF font if available
+    if os.path.exists(FONT_PATH):
+        pdf.add_font("Handwriting", "", FONT_PATH, uni=True)
+        font_family = "Handwriting"
+        title_size = 22
+        body_size = 16
+        line_height = 9
+        safe_title = title
+        safe_text = text
+    else:
+        # Fallback if .ttf font file is missing
+        font_family = "Times"
+        title_size = 16
+        body_size = 12
+        line_height = 7
+        safe_title = title.encode("latin-1", "replace").decode("latin-1")
+        safe_text = text.encode("latin-1", "replace").decode("latin-1")
+
+    # Document Title
+    pdf.set_font(font_family, size=title_size)
+    pdf.cell(0, 12, safe_title, ln=True, align="L")
     pdf.ln(4)
 
-    # Body Text (sanitize unsupported characters for standard Helvetica)
-    pdf.set_font("Helvetica", size=11)
-    safe_text = text.encode("latin-1", "replace").decode("latin-1")
-    pdf.multi_cell(0, 7, safe_text)
+    # Handwritten Body Text
+    pdf.set_font(font_family, size=body_size)
+    pdf.multi_cell(0, line_height, safe_text)
 
     return bytes(pdf.output())
