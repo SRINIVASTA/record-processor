@@ -1,6 +1,6 @@
 from src.groq_client import get_groq_client
 
-def rewrite_human_style(raw_ocr_text: str, model: str = "llama-3.3-70b-versatile") -> str:
+def rewrite_human_style(raw_ocr_text: str, model: str = "openai/gpt-oss-120b") -> str:
     """Cleans OCR artifacts and rewrites text into natural, human-written prose for records."""
     client = get_groq_client()
 
