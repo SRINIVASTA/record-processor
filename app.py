@@ -14,7 +14,11 @@ with st.sidebar:
     st.header("Settings")
     model_choice = st.selectbox(
         "Groq Model",
-        ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
+        [
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b"
+        ],
         index=0
     )
     st.info("Add your `GROQ_API_KEY` in Streamlit Secrets (Cloud) or `.env` (Local).")
