@@ -18,12 +18,11 @@ def _call_groq_with_retry(client, model: str, messages: list, temperature: float
                 "temperature": temperature,
                 "max_tokens": 4096,
             }
-            # Keep reasoning brief on gpt-oss / qwen reasoning models so full output tokens go to content
             if "gpt-oss" in model or "qwen" in model:
                 kwargs["reasoning_effort"] = "low"
 
             resp = client.chat.completions.create(**kwargs)
-            msg = resp.choices.message
+            msg = resp.choices[0].message
             content = (msg.content or "").strip()
 
             if not content and getattr(msg, "reasoning", None):
@@ -33,14 +32,13 @@ def _call_groq_with_retry(client, model: str, messages: list, temperature: float
         except Exception as e:
             err_msg = str(e).lower()
             if "reasoning_effort" in err_msg:
-                # Retry immediately without reasoning_effort if a specific model doesn't support the flag
                 resp = client.chat.completions.create(
                     model=model,
                     messages=messages,
                     temperature=temperature,
                     max_tokens=4096,
                 )
-                return (resp.choices.message.content or "").strip()
+                return (resp.choices[0].message.content or "").strip()
             if "429" in err_msg or "rate_limit" in err_msg:
                 wait_time = 12 * (attempt + 1)
                 time.sleep(wait_time)
