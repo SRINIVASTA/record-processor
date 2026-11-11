@@ -9,6 +9,19 @@ st.set_page_config(page_title="Groq Record Processor", page_icon="📄", layout=
 st.title("📄 Record Processor (Groq + OCR)")
 st.caption("Generate exact-count summaries or convert scanned PDFs into clean, human-written PDF records.")
 
+# Initialize session state so generated results and PDFs stay visible on rerun
+if "opt1_result" not in st.session_state:
+    st.session_state.opt1_result = None
+if "opt1_pdf" not in st.session_state:
+    st.session_state.opt1_pdf = None
+
+if "opt2_clean_text" not in st.session_state:
+    st.session_state.opt2_clean_text = None
+if "opt2_ocr_text" not in st.session_state:
+    st.session_state.opt2_ocr_text = None
+if "opt2_pdf" not in st.session_state:
+    st.session_state.opt2_pdf = None
+
 # Sidebar Settings
 with st.sidebar:
     st.header("Settings")
@@ -26,7 +39,7 @@ with st.sidebar:
 tab1, tab2 = st.tabs(["Option 1: Summary & Counts", "Option 2: Scanned PDF to Clean PDF"])
 
 # ==========================================
-# OPTION 1: SUMMARY + WORD/CHARACTER COUNTS
+# OPTION 1: SUMMARY + COUNTS + PDF DOWNLOAD
 # ==========================================
 with tab1:
     st.subheader("Option 1: Groq Summary with Word & Character Counts")
@@ -37,7 +50,7 @@ with tab1:
     if input_method == "Paste Text":
         raw_text = st.text_area("Paste your text here:", height=200)
     else:
-        digital_pdf = st.file_uploader("Upload a standard PDF", type=["pdf"], key="opt1_pdf")
+        digital_pdf = st.file_uploader("Upload a standard PDF", type=["pdf"], key="opt1_pdf_uploader")
         if digital_pdf:
             raw_text = extract_digital_pdf_text(digital_pdf)
             st.success(f"Extracted {len(raw_text.split())} words from PDF.")
@@ -48,11 +61,13 @@ with tab1:
     with col2:
         target_limit = st.number_input(f"Maximum {limit_type}:", min_value=10, max_value=5000, value=150, step=10)
 
+    summary_title = st.text_input("Document Title for Summary PDF:", value="Record Summary")
+
     if st.button("Generate Record Summary", type="primary"):
         if not raw_text.strip():
             st.warning("Please enter text or upload a valid PDF first.")
         else:
-            with st.spinner("Generating summary with Groq..."):
+            with st.spinner("Generating summary and building PDF..."):
                 try:
                     result = summarize_for_records(
                         text=raw_text,
@@ -61,17 +76,40 @@ with tab1:
                         model=model_choice
                     )
 
-                    st.markdown("### Generated Summary")
-                    st.text_area("Copy Summary for Records:", value=result["summary"], height=180)
+                    # Append count footer inside the PDF for official records
+                    pdf_body = (
+                        f"{result['summary']}\n\n"
+                        f"--------------------------------------------------\n"
+                        f"Record Metrics:\n"
+                        f"Words: {result['words']} | "
+                        f"Characters (with spaces): {result['chars_with_spaces']} | "
+                        f"Characters (no spaces): {result['chars_no_spaces']}"
+                    )
+                    pdf_bytes = create_clean_pdf(pdf_body, title=summary_title)
 
-                    # Exact Metric Counters
-                    m1, m2, m3 = st.columns(3)
-                    m1.metric("Word Count", result["words"])
-                    m2.metric("Characters (with spaces)", result["chars_with_spaces"])
-                    m3.metric("Characters (no spaces)", result["chars_no_spaces"])
-
+                    st.session_state.opt1_result = result
+                    st.session_state.opt1_pdf = pdf_bytes
                 except Exception as e:
                     st.error(f"Error: {e}")
+
+    # Display Option 1 Result & Download Button outside the button click block
+    if st.session_state.opt1_result and st.session_state.opt1_pdf:
+        res = st.session_state.opt1_result
+        st.markdown("### Generated Summary")
+        st.text_area("Copy Summary for Records:", value=res["summary"], height=180)
+
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Word Count", res["words"])
+        m2.metric("Characters (with spaces)", res["chars_with_spaces"])
+        m3.metric("Characters (no spaces)", res["chars_no_spaces"])
+
+        st.download_button(
+            label="⬇️ Download Summary as PDF",
+            data=st.session_state.opt1_pdf,
+            file_name="record_summary.pdf",
+            mime="application/pdf",
+            key="download_opt1_pdf"
+        )
 
 # ==========================================
 # OPTION 2: SCANNED PDF -> HUMAN STYLE PDF
@@ -79,7 +117,7 @@ with tab1:
 with tab2:
     st.subheader("Option 2: Scanned PDF to Human-Written PDF")
 
-    scanned_pdf = st.file_uploader("Upload your scanned PDF", type=["pdf"], key="opt2_pdf")
+    scanned_pdf = st.file_uploader("Upload your scanned PDF", type=["pdf"], key="opt2_pdf_uploader")
     doc_title = st.text_input("Document Title for Output PDF:", value="Official Record Document")
 
     if st.button("Scan & Generate Human-Style PDF", type="primary"):
@@ -99,19 +137,26 @@ with tab2:
                     with st.spinner("Step 3/3: Building clean PDF for records..."):
                         pdf_bytes = create_clean_pdf(clean_text, title=doc_title)
 
-                    st.success("Your clean, human-written PDF is ready!")
-
-                    with st.expander("View Raw OCR Text"):
-                        st.text(ocr_text)
-
-                    st.markdown("### Human-Written Record Preview")
-                    st.text_area("Edited Text:", value=clean_text, height=250)
-
-                    st.download_button(
-                        label="⬇️ Download Clean Record PDF",
-                        data=pdf_bytes,
-                        file_name="clean_record.pdf",
-                        mime="application/pdf"
-                    )
+                    st.session_state.opt2_ocr_text = ocr_text
+                    st.session_state.opt2_clean_text = clean_text
+                    st.session_state.opt2_pdf = pdf_bytes
             except Exception as e:
                 st.error(f"Processing failed: {e}")
+
+    # Display Option 2 Result & Download Button outside the button click block
+    if st.session_state.opt2_clean_text and st.session_state.opt2_pdf:
+        st.success("Your clean, human-written PDF is ready!")
+
+        with st.expander("View Raw OCR Text"):
+            st.text(st.session_state.opt2_ocr_text)
+
+        st.markdown("### Human-Written Record Preview")
+        st.text_area("Edited Text:", value=st.session_state.opt2_clean_text, height=250)
+
+        st.download_button(
+            label="⬇️ Download Clean Record PDF",
+            data=st.session_state.opt2_pdf,
+            file_name="clean_record.pdf",
+            mime="application/pdf",
+            key="download_opt2_pdf"
+        )
