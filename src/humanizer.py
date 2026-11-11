@@ -20,6 +20,7 @@ def rewrite_human_style(raw_ocr_text: str, model: str = "openai/gpt-oss-120b") -
             {"role": "user", "content": prompt}
         ],
         temperature=0.4,
+        max_tokens=4096,
     )
 
     return response.choices[0].message.content.strip()
