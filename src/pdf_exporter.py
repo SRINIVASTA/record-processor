@@ -6,18 +6,18 @@ FONT_PATH = os.path.join("fonts", "Caveat-Regular.ttf")
 def create_clean_pdf(
     text: str,
     title: str = "Official Record Document",
-    ink_color: str = "blue"
+    ink_color: str = "Blue"
 ) -> bytes:
-    """Generates a PDF rendered in a realistic human handwriting font."""
+    """Generates a PDF rendered in a realistic human handwriting font with Blue or Black pen ink."""
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
 
-    # Set realistic pen ink color (Blue Ballpoint/Gel Pen or Black Ink)
-    if ink_color.lower() == "blue":
-        pdf.set_text_color(20, 45, 115)   # Classic dark blue pen ink
+    # Set realistic pen ink color
+    if ink_color.strip().lower() == "blue":
+        pdf.set_text_color(18, 52, 130)   # Classic royal/ballpoint blue pen ink
     else:
-        pdf.set_text_color(25, 25, 28)    # Classic black pen ink
+        pdf.set_text_color(28, 28, 30)    # Classic natural black pen ink
 
     # Load custom handwriting TTF font if available
     if os.path.exists(FONT_PATH):
