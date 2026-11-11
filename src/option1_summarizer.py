@@ -11,7 +11,7 @@ def summarize_for_records(
     text: str,
     target_limit: int = 150,
     limit_type: str = "words",
-    model: str = "llama-3.3-70b-versatile"
+    model: str = "openai/gpt-oss-120b"
 ) -> dict:
     """Generates a record summary via Groq and computes exact word/character counts."""
     client = get_groq_client()
