@@ -1,4 +1,4 @@
-# 📄 Groq Record Processor (Handwritten PDF & OCR Suite)
+# 📄 Record Processor (Handwritten PDF & OCR Suite)
 
 A local web application (`http://localhost:8501`) for generating multi-page **handwritten-style PDF records** and converting **scanned PDFs** into clean, readable documents using **Tesseract OCR**, **Groq AI**, and **FPDF2**.
 
