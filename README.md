@@ -1,4 +1,4 @@
-# 📄 Record Processor (Handwritten PDF & OCR Suite)
+# 📄 Groq Record Processor (Handwritten PDF & OCR Suite)
 
 A local web application (`http://localhost:8501`) for generating multi-page **handwritten-style PDF records** and converting **scanned PDFs** into clean, readable documents using **Tesseract OCR**, **Groq AI**, and **FPDF2**.
 
@@ -44,7 +44,7 @@ chart TD
   * Specify the exact target page count (**1 to 50 pages**) and generate structured, human-style prose without unwanted metadata headers.
   * Displays live **PDF Page Count**, **Word Count**, **Characters (with spaces)**, and **Characters (no spaces)**.
 * **Option 2 — Scanned PDF to Handwritten PDF:**
-  * Converts scanned PDFs one page at a time locally to keep memory usage minimal.
+  * Converts scanned PDFs one page at a time locally to keep RAM usage minimal.
   * **Direct-to-PDF by default** (fast, zero API limits) with an optional **Groq AI cleanup** toggle to fix scanning typos in safe token chunks.
 * **Authentic Handwriting Export (`Caveat-Regular.ttf`):**
   * Switch between **Blue Pen Ink** and **Black Pen Ink** in the sidebar.
