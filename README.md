@@ -7,27 +7,32 @@ A local web application (`http://localhost:8501`) for generating multi-page **ha
 ## 🏗️ System Architecture & Workflow
 
 ```mermaid
-flowchart TD
-    User(["User at localhost:8501"]) --> Mode{"Select Mode"}
+chart TD
+    subgraph User_Interface_Layer [User Interface Layer - Localhost:8501]
+        A[app.py<br>Streamlit Web Gateway] e1@-->|Select Workflow Mode| B{Record Mode Router}
+    end
 
-    Mode -->|"Option 1: Generate by Pages"| Input1["Topic, Pasted Text, or Digital PDF"]
-    Input1 --> Planner["Groq AI Multi-Section Generator"]
-    Planner --> Metrics["Compute Exact Word and Character Counts"]
+    subgraph Option1_Generation_Layer [Option 1 - Multi-Page Record Engine]
+        B e2@-->|Topic / Digital PDF| C[option1_summarizer.py<br>Groq Multi-Section Planner]
+        C e3@-->|Token-Safe Prompts| D[groq_client.py<br>Groq LLM API & Auto-Retry]
+        D e4@-->|Structured Human Prose| E[Metrics Calculator<br>Pages, Words & Chars]
+    end
 
-    Mode -->|"Option 2: Scanned PDF to Handwritten PDF"| Input2["Upload Scanned PDF"]
-    Input2 --> OCR["Memory-Safe Page-by-Page Tesseract OCR"]
-    OCR --> CleanCheck{"Optional Groq Cleanup?"}
-    CleanCheck -->|"Unchecked - Default"| DirectText["Direct Extracted OCR Text"]
-    CleanCheck -->|"Checked"| ChunkGroq["Chunked Groq Rewriter"]
+    subgraph Option2_OCR_Layer [Option 2 - Scanned PDF OCR Engine]
+        B e5@-->|Scanned PDF Bytes| F[option2_ocr.py<br>1-Page-at-a-Time Tesseract OCR]
+        F e6@-->|Extracted Raw Text| G{Optional Groq Cleanup?}
+        G e7@-->|Checked - Chunked 1800w| H[humanizer.py<br>OCR Typo & Prose Rewriter]
+        G e8@-->|Unchecked - Default| I[Direct OCR Payload]
+    end
 
-    Metrics --> Sanitizer["Unicode and Math Glyph Sanitizer"]
-    DirectText --> Sanitizer
-    ChunkGroq --> Sanitizer
-
-    Sanitizer --> FontEngine["FPDF2 Handwriting Renderer - Caveat.ttf"]
-    FontEngine --> Ink{"Pen Ink Color"}
-    Ink -->|"Blue Ink"| BluePDF["Download Blue Ink PDF"]
-    Ink -->|"Black Ink"| BlackPDF["Download Black Ink PDF"]
+    subgraph Handwritten_PDF_Export_Layer [Handwritten PDF Rendering Layer]
+        E e9@-->|Clean Body Text| J[pdf_exporter.py<br>Unicode & Math Glyph Sanitizer]
+        H e10@-->|Rewritten Prose| J
+        I e11@-->|Raw OCR Text| J
+        J e12@-->|Caveat-Regular.ttf| K{Pen Ink Color}
+        K e13@-->|RGB 18, 52, 130| L[Blue Ink Handwritten PDF]
+        K e14@-->|RGB 28, 28, 30| M[Black Ink Handwritten PDF]
+    end
 ```
 
 ---
