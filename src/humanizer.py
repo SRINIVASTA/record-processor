@@ -13,14 +13,17 @@ def rewrite_human_style(raw_ocr_text: str, model: str = "openai/gpt-oss-120b") -
         f"{raw_ocr_text}"
     )
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
+    kwargs = {
+        "model": model,
+        "messages": [
             {"role": "system", "content": "You are an expert editor preparing clean, human-written documents for permanent records."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.4,
-        max_tokens=4096,
-    )
+        "temperature": 0.4,
+        "max_tokens": 4096,
+    }
+    if "gpt-oss" in model or "qwen" in model:
+        kwargs["reasoning_effort"] = "low"
 
-    return response.choices[0].message.content.strip()
+    response = client.chat.completions.create(**kwargs)
+    return (response.choices[0].message.content or "").strip()
