@@ -8,29 +8,26 @@ A local web application (`http://localhost:8501`) for generating multi-page **ha
 
 ```mermaid
 flowchart TD
-    User([👤 User at http://localhost:8501]) --> Mode{Select Mode}
+    User(["User at localhost:8501"]) --> Mode{"Select Mode"}
 
-    %% Option 1 Flow
-    Mode -->|Option 1: Generate by Pages| Input1[Topic / Pasted Text / Digital PDF]
-    Input1 --> Planner[Groq AI Multi-Section Generator<br/>gpt-oss-20b / gpt-oss-120b / qwen3.8-27b]
-    Planner --> Metrics[Compute Exact Word & Character Counts]
+    Mode -->|"Option 1: Generate by Pages"| Input1["Topic, Pasted Text, or Digital PDF"]
+    Input1 --> Planner["Groq AI Multi-Section Generator"]
+    Planner --> Metrics["Compute Exact Word and Character Counts"]
 
-    %% Option 2 Flow
-    Mode -->|Option 2: Scanned PDF to Handwritten PDF| Input2[Upload Scanned PDF]
-    Input2 --> OCR[Memory-Safe Page-by-Page OCR<br/>pdf2image + Tesseract]
-    OCR --> CleanCheck{Optional Groq Cleanup?}
-    CleanCheck -->|Unchecked - Default| DirectText[Direct Extracted OCR Text]
-    CleanCheck -->|Checked| ChunkGroq[Chunked Groq Rewriter<br/>Safe under 8,000 TPM limit]
+    Mode -->|"Option 2: Scanned PDF to Handwritten PDF"| Input2["Upload Scanned PDF"]
+    Input2 --> OCR["Memory-Safe Page-by-Page Tesseract OCR"]
+    OCR --> CleanCheck{"Optional Groq Cleanup?"}
+    CleanCheck -->|"Unchecked - Default"| DirectText["Direct Extracted OCR Text"]
+    CleanCheck -->|"Checked"| ChunkGroq["Chunked Groq Rewriter"]
 
-    %% Shared PDF Export Pipeline
-    Metrics --> Sanitizer[Unicode & Math Glyph Sanitizer]
+    Metrics --> Sanitizer["Unicode and Math Glyph Sanitizer"]
     DirectText --> Sanitizer
     ChunkGroq --> Sanitizer
 
-    Sanitizer --> FontEngine[FPDF2 Handwriting Renderer<br/>Caveat-Regular.ttf]
-    FontEngine --> Ink{Pen Ink Color}
-    Ink -->|Blue Ink| BluePDF[⬇️ Download Blue Ink PDF]
-    Ink -->|Black Ink| BlackPDF[⬇️ Download Black Ink PDF]
+    Sanitizer --> FontEngine["FPDF2 Handwriting Renderer - Caveat.ttf"]
+    FontEngine --> Ink{"Pen Ink Color"}
+    Ink -->|"Blue Ink"| BluePDF["Download Blue Ink PDF"]
+    Ink -->|"Black Ink"| BlackPDF["Download Black Ink PDF"]
 ```
 
 ---
