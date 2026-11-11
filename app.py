@@ -83,16 +83,9 @@ with tab1:
                         model=model_choice
                     )
 
-                    pdf_body = (
-                        f"{result['summary']}\n\n"
-                        f"--------------------------------------------------\n"
-                        f"Record Metrics:\n"
-                        f"Words: {result['words']} | "
-                        f"Characters (with spaces): {result['chars_with_spaces']} | "
-                        f"Characters (no spaces): {result['chars_no_spaces']}"
-                    )
+                    # Pass ONLY the clean summary text into the PDF (no metrics footer)
                     pdf_bytes = create_clean_pdf(
-                        pdf_body,
+                        result["summary"],
                         title=summary_title,
                         ink_color=ink_choice
                     )
