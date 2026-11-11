@@ -1,7 +1,7 @@
 import gc
+import io
 import pytesseract
 from pypdf import PdfReader
-import io
 from pdf2image import convert_from_bytes
 
 def extract_text_from_scanned_pdf(pdf_bytes: bytes, dpi: int = 150) -> str:
@@ -14,19 +14,20 @@ def extract_text_from_scanned_pdf(pdf_bytes: bytes, dpi: int = 150) -> str:
     extracted_pages = []
 
     for page_num in range(1, total_pages + 1):
-        # Convert only 1 page at a time to keep RAM usage tiny
+        # Convert 1 page at a time to keep RAM usage low
         images = convert_from_bytes(
             pdf_bytes,
             dpi=dpi,
             first_page=page_num,
             last_page=page_num,
         )
-        if images:
-            page_text = pytesseract.image_to_string(images).strip()
+        for img in images:
+            page_text = pytesseract.image_to_string(img).strip()
             if page_text:
                 extracted_pages.append(page_text)
-            images.close()
-            del images
-            gc.collect()
+            img.close()
+
+        del images
+        gc.collect()
 
     return "\n\n".join(extracted_pages).strip()
