@@ -5,3 +5,5 @@ pdf2image
 pypdf
 fpdf2
 python-dotenv
+opencv-python-headless
+numpy
