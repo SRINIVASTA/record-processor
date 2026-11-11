@@ -47,7 +47,7 @@ def rewrite_human_style(
         for attempt in range(4):
             try:
                 resp = client.chat.completions.create(**kwargs)
-                part = (resp.choices.message.content or "").strip()
+                part = (resp.choices[0].message.content or "").strip()
                 cleaned_parts.append(part)
                 break
             except Exception as e:
