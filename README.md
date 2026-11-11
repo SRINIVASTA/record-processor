@@ -33,6 +33,21 @@ flowchart TD
         K e13@-->|"RGB 18, 52, 130"| L["Blue Ink Handwritten PDF"]
         K e14@-->|"RGB 28, 28, 30"| M["Black Ink Handwritten PDF"]
     end
+
+    e1@{ animate: true }
+    e2@{ animate: true }
+    e3@{ animate: true }
+    e4@{ animate: true }
+    e5@{ animate: true }
+    e6@{ animate: true }
+    e7@{ animate: true }
+    e8@{ animate: true }
+    e9@{ animate: true }
+    e10@{ animate: true }
+    e11@{ animate: true }
+    e12@{ animate: true }
+    e13@{ animate: true }
+    e14@{ animate: true }
 ```
 
 ---
