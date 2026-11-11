@@ -9,24 +9,44 @@ def extract_digital_pdf_text(uploaded_file) -> str:
     return "\n".join(pages).strip()
 
 def _call_groq_with_retry(client, model: str, messages: list, temperature: float = 0.4, max_retries: int = 4) -> str:
-    """Calls Groq API and automatically waits & retries if a 429 Rate Limit occurs."""
+    """Calls Groq API with enough max_tokens for reasoning models and retries on 429 rate limits."""
     for attempt in range(max_retries):
         try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-            )
-            return resp.choices[0].message.content.strip()
+            kwargs = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": 4096,
+            }
+            # Keep reasoning brief on gpt-oss / qwen reasoning models so full output tokens go to content
+            if "gpt-oss" in model or "qwen" in model:
+                kwargs["reasoning_effort"] = "low"
+
+            resp = client.chat.completions.create(**kwargs)
+            msg = resp.choices.message
+            content = (msg.content or "").strip()
+
+            if not content and getattr(msg, "reasoning", None):
+                content = msg.reasoning.strip()
+
+            return content
         except Exception as e:
             err_msg = str(e).lower()
+            if "reasoning_effort" in err_msg:
+                # Retry immediately without reasoning_effort if a specific model doesn't support the flag
+                resp = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=4096,
+                )
+                return (resp.choices.message.content or "").strip()
             if "429" in err_msg or "rate_limit" in err_msg:
                 wait_time = 12 * (attempt + 1)
                 time.sleep(wait_time)
             else:
                 raise e
     raise RuntimeError("Groq rate limit persisted after multiple retries. Please try again in a minute.")
-
 def generate_by_pages(
     content_or_topic: str,
     target_pages: int = 30,
