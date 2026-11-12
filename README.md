@@ -1,9 +1,6 @@
 # Record Processor
 
-![Python](https://shields.io)
-![Streamlit](https://shields.io)
-![Groq AI](https://shields.io)
-![License](https://shields.io)
+![Python](https://shields.io) ![Streamlit](https://shields.io) ![Groq](https://shields.io) ![License](https://shields.io)
 
 A local web application (`http://localhost:8501`) for generating multi-page handwritten-style PDF records and converting scanned PDFs into clean, readable documents using Tesseract OCR, Groq AI, and FPDF2.
 
