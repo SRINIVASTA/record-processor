@@ -9,6 +9,9 @@ Record Processor provides a lightweight, local-first pipeline for turning topics
 
 Built and maintained by [@SRINIVASTA](https://github.com), this repository hosts a Streamlit web gateway, a multi-section Groq LLM planner, a memory-safe 1-page-at-a-time Tesseract OCR engine, and a TrueType handwriting PDF renderer.
 
+<img src="assets/desktop.png">
+
+
 ## Modules in this repo
 
 | Module | Description |
